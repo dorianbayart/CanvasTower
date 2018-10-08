@@ -1,6 +1,7 @@
 
 var canvasXSize;
 var canvasYSize;
+var landscape = true;
 var ctx;
 var fpsGame = 0;
 var fpsGameTab = 5;
@@ -36,17 +37,6 @@ function init(){
     ctxGame = canvasGame.getContext('2d');
     ctxUI = canvasUI.getContext('2d');
 
-    canvasXSize = window.innerWidth;
-    canvasYSize = window.innerHeight;
-
-    canvasGame.width = canvasXSize;
-    canvasGame.height = canvasYSize;
-    canvasUI.width = canvasXSize;
-    canvasUI.height = canvasYSize;
-
-    console.log(canvasXSize);
-    console.log(canvasYSize);
-
     dateGame0 = performance.now();
     dateGame1 = dateGame0;
     dateUI0 = dateGame0;
@@ -58,6 +48,10 @@ function init(){
       creep.vy = Math.random();
       creeps[i] = creep;
     }
+	
+	window.addEventListener("resize", resizeGame);
+	window.addEventListener('orientationchange', resizeGame);
+	resizeGame();
 
     window.requestAnimationFrame(drawGame);
     window.requestAnimationFrame(drawUI);
@@ -124,4 +118,45 @@ function drawUI() {
 
   //window.requestAnimationFrame(drawUI);
   setTimeout(drawUI, delayUI);
+}
+
+function resizeGame() {
+	var canvasGame = document.getElementById('game-layer');
+	var canvasUI = document.getElementById('ui-layer');
+	
+	// Récupère les dimensions de la fenêtre
+    viewport = {
+		width: window.innerWidth,
+		height: window.innerHeight
+    };
+	var ratioSize = 1.6; // Défini un ratio pour les canvas
+	
+	if(viewport.width > viewport.height) {
+		if(Math.floor(viewport.width / ratioSize) > viewport.height) {
+			canvasYSize = viewport.height;
+			canvasXSize = Math.floor(canvasYSize * ratioSize);
+		} else {
+			canvasXSize = viewport.width;
+			canvasYSize = Math.floor(canvasXSize / ratioSize);
+		}
+		landscape = true;
+	} else {
+		if(Math.floor(viewport.width * ratioSize) > viewport.height) {
+			canvasYSize = viewport.height;
+			canvasXSize = Math.floor(canvasYSize / ratioSize);
+		} else {
+			canvasXSize = viewport.width;
+			canvasYSize = Math.floor(canvasXSize * ratioSize);
+		}
+		landscape = false;
+	}
+	
+	canvasGame.width = canvasXSize;
+    canvasGame.height = canvasYSize;
+    canvasUI.width = canvasXSize;
+    canvasUI.height = canvasYSize;
+	
+	// Centre les canvas
+    canvasGame.style.margin = (viewport.height-canvasYSize)/2 + "px " + (viewport.width-canvasXSize)/2 + "px";
+    canvasUI.style.margin = (viewport.height-canvasYSize)/2 + "px " + (viewport.width-canvasXSize)/2 + "px";
 }
