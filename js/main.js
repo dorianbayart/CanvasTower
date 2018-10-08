@@ -1,6 +1,7 @@
 
 var canvasXSize;
 var canvasYSize;
+var gameSize;
 var landscape = true;
 var ctx;
 var fpsGame = 0;
@@ -52,7 +53,7 @@ function init(){
 	  var creep = Object.create(Creep);
 	  creep.vx = Math.random();
 	  creep.vy = Math.random();
-	  creep.radius = 0.01*canvasXSize;
+	  creep.radius = 0.01*gameSize;
 	  creeps[i] = creep;
 	}
 
@@ -74,7 +75,7 @@ function drawGame() {
   ctxGame.lineWidth = 1;
 
   ctxGame.beginPath();
-  ctxGame.arc(0.15*canvasXSize, 0.15*canvasXSize, 0.04*canvasXSize, 0, Math.PI*2, false);
+  ctxGame.arc(0.1*gameSize, 0.1*gameSize, 0.04*gameSize, 0, Math.PI*2, false);
   ctxGame.closePath();
   ctxGame.strokeStyle = "coral";
   ctxGame.fillStyle = "bisque";
@@ -82,7 +83,7 @@ function drawGame() {
   ctxGame.stroke();
   
   ctxGame.beginPath();
-  ctxGame.arc(0.85*canvasYSize, 0.85*canvasYSize, 0.04*canvasXSize, 0, Math.PI*2, false);
+  ctxGame.arc(0.9*gameSize, 0.9*gameSize, 0.04*gameSize, 0, Math.PI*2, false);
   ctxGame.closePath();
   ctxGame.strokeStyle = "limegreen";
   ctxGame.fillStyle = "palegreen";
@@ -93,8 +94,8 @@ function drawGame() {
 	var creep = creeps[i];
 	creep.x += creep.vx * creep.speed /** diffTime/1000.*/;
 	creep.y += creep.vy * creep.speed /** diffTime/1000.*/;
-	if(creep.x > canvasXSize - creep.radius || creep.x < creep.radius) creep.vx = -creep.vx;
-	if(creep.y > canvasYSize - creep.radius || creep.y < creep.radius) creep.vy = -creep.vy;
+	if(creep.x > gameSize - creep.radius || creep.x < creep.radius) creep.vx = -creep.vx;
+	if(creep.y > gameSize - creep.radius || creep.y < creep.radius) creep.vy = -creep.vy;
 	creep.draw(ctxGame);
   }
 
@@ -110,6 +111,19 @@ function drawUI() {
   else if (Math.round(fpsUI) < fpsUIDesired) delayUI --;
 
   ctxUI.clearRect(0, 0, canvasXSize, canvasYSize);
+  
+  // Bar UI
+  ctxUI.beginPath();
+  if(landscape) {
+		ctxUI.moveTo(gameSize+1, 0);
+		ctxUI.lineTo(gameSize+1, gameSize);
+  } else {
+		ctxUI.moveTo(0, gameSize+1);
+		ctxUI.lineTo(gameSize, gameSize+1);
+  }
+  ctxUI.closePath();
+  ctxUI.strokeStyle = "limegreen";
+  ctxUI.stroke();
 
   // Title
   var copyrightChar = String.fromCharCode(169);
@@ -126,7 +140,7 @@ function drawUI() {
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   ctxUI.fillStyle = "darkgreen";
-  ctxUI.fillText(canvasXSize+'x'+canvasYSize+' pixels', 2, 2);
+  ctxUI.fillText(canvasXSize+'x'+canvasYSize+' pixels ('+gameSize+')', 2, 2);
   ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
   ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps - Delay: '+delayUI+'ms', 2, 2+2*parseInt(ctxUI.font));
 
@@ -154,6 +168,7 @@ function resizeGame() {
 			canvasXSize = viewport.width;
 			canvasYSize = Math.floor(canvasXSize / ratioSize);
 		}
+		gameSize = canvasYSize;
 		landscape = true;
 	} else {
 		if(Math.floor(viewport.width * ratioSize) > viewport.height) {
@@ -163,6 +178,7 @@ function resizeGame() {
 			canvasXSize = viewport.width;
 			canvasYSize = Math.floor(canvasXSize * ratioSize);
 		}
+		gameSize = canvasXSize;
 		landscape = false;
 	}
 	
