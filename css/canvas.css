@@ -19,8 +19,6 @@ body {
 
 canvas {
   position: absolute;
-  width: 100%;
-  height: auto;
 }
 #ui-layer { z-index: 3 }
 #game-layer { z-index: 2 }
