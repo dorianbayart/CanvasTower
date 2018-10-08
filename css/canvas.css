@@ -14,11 +14,12 @@ body {
   height: auto;
   margin: 0px;
   position: relative;
-  border: 0px solid black;
+  
 }
 
 canvas {
   position: absolute;
+  outline: 2px solid lavender;
 }
 #ui-layer { z-index: 3 }
 #game-layer { z-index: 2 }
