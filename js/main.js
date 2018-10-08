@@ -101,7 +101,7 @@ function drawUI() {
 
   // Title
   var text = 'CanvasTower';
-  ctxUI.font = "12pt Verdana";
+  ctxUI.font = 12+"px Verdana";
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   var textPxLength = ctxUI.measureText(text);
@@ -109,7 +109,7 @@ function drawUI() {
   ctxUI.fillText(text, canvasXSize-8-Math.round(textPxLength.width), 4);
 
   // FPS
-  ctxUI.font = "8pt Verdana";
+  ctxUI.font = 8+"px Verdana";
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   ctxUI.fillStyle = "darkgreen";
