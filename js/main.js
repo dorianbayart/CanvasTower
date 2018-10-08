@@ -122,7 +122,7 @@ function drawUI() {
 		ctxUI.lineTo(gameSize, gameSize+1);
   }
   ctxUI.closePath();
-  ctxUI.strokeStyle = "lightgreen";
+  ctxUI.strokeStyle = "lavender";
   ctxUI.stroke();
 
   // Title
