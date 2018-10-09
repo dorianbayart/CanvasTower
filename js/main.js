@@ -47,6 +47,7 @@ function init(){
 	dateUI1 = dateGame0;
 
 	window.addEventListener("resize", resizeGame);
+  //window.addEventListener("zoom", resizeGame);
 	window.addEventListener('orientationchange', resizeGame);
 	resizeGame();
 
@@ -184,24 +185,24 @@ function resizeGame() {
 		landscape = false;
 	}
 
+  canvasGame.width = canvasXSize;
+  canvasGame.height = canvasYSize;
+  canvasUI.width = canvasXSize;
+  canvasUI.height = canvasYSize;
+  canvasBG.width = canvasXSize;
+  canvasBG.height = canvasYSize;
+  
   devicePixelRatio = viewport.devicePixelRatio;
   canvasXSize *= devicePixelRatio;
   canvasYSize *= devicePixelRatio;
   gameSize *= devicePixelRatio;
-
-	canvasGame.width = canvasXSize;
-	canvasGame.height = canvasYSize;
-	canvasUI.width = canvasXSize;
-	canvasUI.height = canvasYSize;
-	canvasBG.width = canvasXSize;
-	canvasBG.height = canvasYSize;
 
   ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
   ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
   ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
 
 	// Centre les canvas
-	canvasGame.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
-	canvasUI.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
-	canvasBG.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
+	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
+	canvasUI.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
+	canvasBG.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 }
