@@ -2,6 +2,7 @@
 var canvasXSize;
 var canvasYSize;
 var gameSize;
+var devicePixelRatio;
 var landscape = true;
 var ctx;
 var fpsGame = 0;
@@ -48,7 +49,7 @@ function init(){
 	window.addEventListener("resize", resizeGame);
 	window.addEventListener('orientationchange', resizeGame);
 	resizeGame();
-	
+
 	for (var i = 0; i < 100; i++) {
 	  var creep = Object.create(Creep);
 	  creep.vx = Math.random();
@@ -81,7 +82,7 @@ function drawGame() {
   ctxGame.fillStyle = "bisque";
   ctxGame.fill();
   ctxGame.stroke();
-  
+
   ctxGame.beginPath();
   ctxGame.arc(0.9*gameSize, 0.9*gameSize, 0.04*gameSize, 0, Math.PI*2, false);
   ctxGame.closePath();
@@ -111,7 +112,7 @@ function drawUI() {
   else if (Math.round(fpsUI) < fpsUIDesired) delayUI --;
 
   ctxUI.clearRect(0, 0, canvasXSize, canvasYSize);
-  
+
   // Bar UI
   ctxUI.beginPath();
   if(landscape) {
@@ -140,7 +141,7 @@ function drawUI() {
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   ctxUI.fillStyle = "darkgreen";
-  ctxUI.fillText(canvasXSize+'x'+canvasYSize+' pixels ('+gameSize+')', 2, 2);
+  ctxUI.fillText(canvasXSize+'x'+canvasYSize+' pixels ('+devicePixelRatio+')', 2, 2);
   ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
   ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps - Delay: '+delayUI+'ms', 2, 2+2*parseInt(ctxUI.font));
 
@@ -152,14 +153,15 @@ function resizeGame() {
 	var canvasGame = document.getElementById('game-layer');
 	var canvasUI = document.getElementById('ui-layer');
 	var canvasBG = document.getElementById('background-layer');
-	
+
 	// Récupère les dimensions de la fenêtre
 	viewport = {
 		width: window.innerWidth,
-		height: window.innerHeight
+		height: window.innerHeight,
+    devicePixelRatio: window.devicePixelRatio || 1
 	};
 	var ratioSize = 1.6; // Défini un ratio pour les canvas
-	
+
 	if(viewport.width > viewport.height) {
 		if(Math.floor(viewport.width / ratioSize) > viewport.height) {
 			canvasYSize = viewport.height;
@@ -181,16 +183,20 @@ function resizeGame() {
 		gameSize = canvasXSize;
 		landscape = false;
 	}
-	
+
+  devicePixelRatio = viewport.devicePixelRatio;
+  canvasXSize *= devicePixelRatio;
+  canvasYSize *= devicePixelRatio;
+
 	canvasGame.width = canvasXSize;
 	canvasGame.height = canvasYSize;
 	canvasUI.width = canvasXSize;
 	canvasUI.height = canvasYSize;
 	canvasBG.width = canvasXSize;
 	canvasBG.height = canvasYSize;
-	
+
 	// Centre les canvas
-	canvasGame.style.margin = (viewport.height-canvasYSize)/2 + "px " + (viewport.width-canvasXSize)/2 + "px";
-	canvasUI.style.margin = (viewport.height-canvasYSize)/2 + "px " + (viewport.width-canvasXSize)/2 + "px";
-	canvasBG.style.margin = (viewport.height-canvasYSize)/2 + "px " + (viewport.width-canvasXSize)/2 + "px";
+	canvasGame.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
+	canvasUI.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
+	canvasBG.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
 }
