@@ -130,7 +130,7 @@ function drawUI() {
   // Title
   var copyrightChar = String.fromCharCode(169);
   var text = 'CanvasTower'+copyrightChar+'Dorian Bayart';
-  ctxUI.font = 12+"px Verdana";
+  ctxUI.font = 12*devicePixelRatio+"px Verdana";
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   var textPxLength = ctxUI.measureText(text);
@@ -138,7 +138,7 @@ function drawUI() {
   ctxUI.fillText(text, canvasXSize-2-Math.round(textPxLength.width), canvasYSize-2-parseInt(ctxUI.font));
 
   // FPS
-  ctxUI.font = 10+"px Verdana";
+  ctxUI.font = 10*devicePixelRatio+"px Verdana";
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   ctxUI.fillStyle = "darkgreen";
@@ -191,7 +191,7 @@ function resizeGame() {
   canvasUI.height = canvasYSize;
   canvasBG.width = canvasXSize;
   canvasBG.height = canvasYSize;
-  
+
   devicePixelRatio = viewport.devicePixelRatio;
   canvasXSize *= devicePixelRatio;
   canvasYSize *= devicePixelRatio;
