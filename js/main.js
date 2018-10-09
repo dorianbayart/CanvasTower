@@ -187,6 +187,7 @@ function resizeGame() {
   devicePixelRatio = viewport.devicePixelRatio;
   canvasXSize *= devicePixelRatio;
   canvasYSize *= devicePixelRatio;
+  gameSize *= devicePixelRatio;
 
 	canvasGame.width = canvasXSize;
 	canvasGame.height = canvasYSize;
@@ -194,6 +195,10 @@ function resizeGame() {
 	canvasUI.height = canvasYSize;
 	canvasBG.width = canvasXSize;
 	canvasBG.height = canvasYSize;
+
+  ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
+  ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
+  ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
 
 	// Centre les canvas
 	canvasGame.style.margin = (devicePixelRatio*viewport.height-canvasYSize)/2 + "px " + (devicePixelRatio*viewport.width-canvasXSize)/2 + "px";
