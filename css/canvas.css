@@ -23,7 +23,7 @@ body {
 
 canvas {
   position: absolute;
-  outline: 2px solid lavender;
+  outline: 1px solid lavender;
 }
 #ui-layer { z-index: 3 }
 #game-layer { z-index: 2 }
