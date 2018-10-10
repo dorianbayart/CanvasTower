@@ -9,10 +9,6 @@ body {
   display: block;  /* No floating content on sides */
 }
 
-button {
-	position: absolute;
-}
-
 #stage {
   width: 100%;
   height: auto;
