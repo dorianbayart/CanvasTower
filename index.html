@@ -1,14 +1,19 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
+	<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="mobile-web-app-capable" content="yes">
+
   <meta charset="utf-8">
   <title>CanvasTower</title>
   <link rel="stylesheet" href="css/canvas.css">
   <script src="js/main.js"></script>
 </head>
 <body onload="init();">
-
+	
+	<button id='goFS'>FullSreen</button>
   <div id="stage">
     <canvas id="ui-layer"></canvas>
     <canvas id="game-layer"></canvas>
