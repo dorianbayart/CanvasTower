@@ -3,6 +3,7 @@ var canvasXSize;
 var canvasYSize;
 var gameSize;
 var devicePixelRatio;
+var ratioSize = 1.4; // Défini un ratio pour les canvas
 var landscape = true;
 var ctx;
 var fpsGame = 0;
@@ -19,6 +20,8 @@ var dateGame0, dateGame1;
 var dateUI0, dateUI1;
 var dateBG0, dateBG1;
 var creeps = [];
+var mapSectionSize = 5; // En pourcentage
+var baseMap = [];
 
 var Creep = {
   x: 100,
@@ -38,9 +41,24 @@ var Creep = {
 };
 
 function init(){
+	
+	// Prevent from scrolling on mobile
+	document.body.addEventListener("touchmove", function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}, false);
+	
   var canvasGame = document.getElementById('game-layer');
   var canvasUI = document.getElementById('ui-layer');
   var canvasBG = document.getElementById('background-layer');
+  
+  
+  var goFS = document.getElementById("goFS");
+	goFS.addEventListener("click", function() {
+      toggleFullScreen();
+  }, false);
+
+  
   if (canvasGame.getContext) {
   	ctxGame = canvasGame.getContext('2d');
   	ctxUI = canvasUI.getContext('2d');
@@ -67,6 +85,13 @@ function init(){
   	  creep.vy = 2*Math.random()-0.5;
   	  creeps[i] = creep;
   	}
+	
+	
+	/*for (var i = 0; i < 100/mapSectionSize; i++) {
+		for (var j = 0; j < 100/mapSectionSize; j++) {
+			
+		}
+	}*/
 
   	window.requestAnimationFrame(drawGame);
   	window.requestAnimationFrame(drawUI);
@@ -125,7 +150,7 @@ function drawUI() {
   // Title
   var copyrightChar = String.fromCharCode(169);
   var text = 'CanvasTower'+copyrightChar+'Dorian Bayart';
-  ctxUI.font = 12*devicePixelRatio+"px Verdana";
+  ctxUI.font = 10*devicePixelRatio+"px Verdana";
   ctxUI.textAlign = "left";
   ctxUI.textBaseline = "top";
   var textPxLength = ctxUI.measureText(text);
@@ -202,7 +227,6 @@ function resizeGame() {
 		height: window.innerHeight,
     devicePixelRatio: window.devicePixelRatio || 1
 	};
-	var ratioSize = 1.6; // Défini un ratio pour les canvas
 
 	if(viewport.width > viewport.height) {
 		if(Math.floor(viewport.width / ratioSize) > viewport.height) {
@@ -246,4 +270,19 @@ function resizeGame() {
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 	canvasUI.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 	canvasBG.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
+}
+
+function toggleFullScreen() {
+  var doc = window.document;
+  var docEl = doc.getElementById("stage");
+
+  var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+  var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+    requestFullScreen.call(docEl);
+  }
+  else {
+    cancelFullScreen.call(doc);
+  }
 }
