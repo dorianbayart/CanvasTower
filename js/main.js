@@ -52,13 +52,6 @@ function init(){
   var canvasUI = document.getElementById('ui-layer');
   var canvasBG = document.getElementById('background-layer');
   
-  
-  var goFS = document.getElementById("goFS");
-	goFS.addEventListener("click", function() {
-      toggleFullScreen();
-  }, false);
-
-  
   if (canvasGame.getContext) {
   	ctxGame = canvasGame.getContext('2d');
   	ctxUI = canvasUI.getContext('2d');
@@ -270,19 +263,4 @@ function resizeGame() {
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 	canvasUI.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 	canvasBG.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
-}
-
-function toggleFullScreen() {
-  var doc = window.document;
-  var docEl = doc.getElementById("stage");
-
-  var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-  var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-    requestFullScreen.call(docEl);
-  }
-  else {
-    cancelFullScreen.call(doc);
-  }
 }
