@@ -20,6 +20,10 @@ var dateGame0, dateGame1;
 var dateUI0, dateUI1;
 var dateBG0, dateBG1;
 var creeps = [];
+var towers = [];
+var shots = [];
+var startZone;
+var endZone;
 var mapSectionSize = 5; // En pourcentage
 var baseMap = [];
 
@@ -29,29 +33,78 @@ var Creep = {
   vx: 1,
   vy: 1,
   speed: 2,
-  radius: 2,
+  radius: 0.01,
   color: 'blue',
   draw: function(ctx) {
-	ctx.beginPath();
-	ctx.arc(Math.round(this.x), Math.round(this.y), Math.round(this.radius), 0, Math.PI*2, false);
-	ctx.closePath();
-	ctx.strokeStyle = this.color;
-	ctx.stroke();
+  	ctx.beginPath();
+  	ctx.arc(Math.round(this.x), Math.round(this.y), Math.round(this.radius), 0, Math.PI*2, false);
+  	ctx.closePath();
+  	ctx.strokeStyle = this.color;
+  	ctx.stroke();
+  }
+};
+
+var StartZone = {
+  x: 0.15,
+  y: 0.15,
+  radius: 0.05,
+  draw: function(ctx) {
+    ctx.beginPath();
+    ctx.arc(Math.round(this.x*gameSize), Math.round(this.y*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
+    ctx.closePath();
+    ctx.strokeStyle = "coral";
+    ctx.fillStyle = "bisque";
+    ctx.fill();
+    ctx.stroke();
+  }
+};
+
+var EndZone = {
+  x: 0.85,
+  y: 0.85,
+  radius: 0.05,
+  draw: function(ctx) {
+    ctx.beginPath();
+    ctx.arc(Math.round(this.x*gameSize), Math.round(this.y*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
+    ctx.closePath();
+    ctx.strokeStyle = "limegreen";
+    ctx.fillStyle = "palegreen";
+    ctx.fill();
+    ctx.stroke();
+  }
+};
+
+var Tower = {
+  x: 0.1,
+  y: 0.1,
+  radius: 0.02,
+  power: 10,
+  range: 0.1, // radius
+  cadence: 1, // per second
+  type: 'basic',
+  draw: function(ctx) {
+    ctx.beginPath();
+    ctx.arc(Math.round(this.x), Math.round(this.y), Math.round(this.radius), 0, Math.PI*2, false);
+    ctx.closePath();
+    ctx.strokeStyle = "coral";
+    ctx.fillStyle = "bisque";
+    ctx.fill();
+    ctx.stroke();
   }
 };
 
 function init(){
-	
+
 	// Prevent from scrolling on mobile
 	document.body.addEventListener("touchmove", function(event) {
 		event.preventDefault();
 		event.stopPropagation();
 	}, false);
-	
+
   var canvasGame = document.getElementById('game-layer');
   var canvasUI = document.getElementById('ui-layer');
   var canvasBG = document.getElementById('background-layer');
-  
+
   if (canvasGame.getContext) {
   	ctxGame = canvasGame.getContext('2d');
   	ctxUI = canvasUI.getContext('2d');
@@ -69,22 +122,36 @@ function init(){
   	window.addEventListener('orientationchange', resizeGame);
   	resizeGame();
 
-  	for (var i = 0; i < 100; i++) {
+  	for (var i = 0; i < 20; i++) {
   	  var creep = Object.create(Creep);
-  	  creep.radius = 1/100*gameSize;
+  	  creep.radius *= gameSize;
       creep.x = Math.floor(Math.random()*(gameSize-2*creep.radius))+creep.radius;
   	  creep.y = Math.floor(Math.random()*(gameSize-2*creep.radius))+creep.radius;
   	  creep.vx = 2*Math.random()-0.5;
   	  creep.vy = 2*Math.random()-0.5;
   	  creeps[i] = creep;
   	}
-	
-	
-	/*for (var i = 0; i < 100/mapSectionSize; i++) {
-		for (var j = 0; j < 100/mapSectionSize; j++) {
-			
-		}
-	}*/
+
+    startZone = Object.create(StartZone);
+    endZone = Object.create(EndZone);
+
+    // Initialize the map
+  	for (var i = 0; i < 100/mapSectionSize; i++) {
+      baseMap[i] = new Array(100/mapSectionSize);
+  		for (var j = 0; j < 100/mapSectionSize; j++) {
+        baseMap[i][j] = 0;
+  		}
+  	}
+    baseMap[startZone.x*100/mapSectionSize][startZone.y*100/mapSectionSize] = 'StartZone';
+    baseMap[endZone.x*100/mapSectionSize][endZone.y*100/mapSectionSize] = 'EndZone';
+
+    for (var i = 0; i < 5; i++) {
+      var tower = Object.create(Tower);
+      tower.radius *= gameSize;
+      tower.x = Math.floor(Math.random()*(gameSize-2*tower.radius))+tower.radius;
+  	  tower.y = Math.floor(Math.random()*(gameSize-2*tower.radius))+tower.radius;
+      towers[i] = tower;
+    }
 
   	window.requestAnimationFrame(drawGame);
   	window.requestAnimationFrame(drawUI);
@@ -104,26 +171,18 @@ function drawGame() {
 
   ctxGame.lineWidth = 1;
 
-  ctxGame.strokeStyle = "coral";
-  ctxGame.fillStyle = "bisque";
-  for (var i = 0; i < 25; i++) {
-    ctxGame.beginPath();
-    ctxGame.arc(i*0.04*gameSize + 0.04*gameSize/2, 0.4*gameSize, 0.02*gameSize, 0, Math.PI*2, false);
-    ctxGame.closePath();
-    ctxGame.fill();
-    ctxGame.stroke();
-  }
-
   for (var i = 0; i < creeps.length; i++) {
   	var creep = creeps[i];
-  	creep.x += creep.vx * creep.speed /** diffTime/1000.*/;
-  	creep.y += creep.vy * creep.speed /** diffTime/1000.*/;
+    /*
+  	creep.x += creep.vx * creep.speed;
+  	creep.y += creep.vy * creep.speed;
   	if(creep.x > gameSize - creep.radius || creep.x < creep.radius) {
       creep.vx = -creep.vx;
     }
   	if(creep.y > gameSize - creep.radius || creep.y < creep.radius) {
       creep.vy = -creep.vy;
     }
+    */
 
   	creep.draw(ctxGame);
   }
@@ -188,23 +247,14 @@ function drawBG() {
   ctxBG.strokeStyle = "lavender";
   ctxBG.stroke();
 
-  // Start zone : Size = 10%
-  ctxBG.beginPath();
-  ctxBG.arc(0.15*gameSize, 0.15*gameSize, 0.05*gameSize, 0, Math.PI*2, false);
-  ctxBG.closePath();
-  ctxBG.strokeStyle = "coral";
-  ctxBG.fillStyle = "bisque";
-  ctxBG.fill();
-  ctxBG.stroke();
+  // StartZone
+  startZone.draw(ctxBG);
+  endZone.draw(ctxBG);
 
-  // End zone : Size = 10%
-  ctxBG.beginPath();
-  ctxBG.arc(0.85*gameSize, 0.85*gameSize, 0.05*gameSize, 0, Math.PI*2, false);
-  ctxBG.closePath();
-  ctxBG.strokeStyle = "limegreen";
-  ctxBG.fillStyle = "palegreen";
-  ctxBG.fill();
-  ctxBG.stroke();
+  for (var i = 0; i < towers.length; i++) {
+    var tower = towers[i];
+    tower.draw(ctxBG);
+  }
 
   setTimeout(drawBG, delayBG);
 }
