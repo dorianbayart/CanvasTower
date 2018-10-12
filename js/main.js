@@ -193,7 +193,7 @@ function drawUI() {
 
 		ctxUI.clearRect(0, 0, canvasXSize, canvasYSize);
 
-		// Title
+		// Title and Name
 		var copyrightChar = String.fromCharCode(169);
 		var text = 'CanvasTower'+copyrightChar+'Dorian Bayart';
 		ctxUI.font = 10*devicePixelRatio+"px Verdana";
@@ -210,8 +210,8 @@ function drawUI() {
 		ctxUI.fillStyle = "darkgreen";
 		ctxUI.fillText(canvasXSize+'x'+canvasYSize+'px (DPR:'+devicePixelRatio+')', 2, 2);
 		ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
-		ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps - Delay: '+delayUI+'ms', 2, 2+2*parseInt(ctxUI.font));
-		ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps - Delay: '+delayBG+'ms', 2, 2+3*parseInt(ctxUI.font));
+		ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps', 2, 2+2*parseInt(ctxUI.font));
+		ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps', 2, 2+3*parseInt(ctxUI.font));
 	}
 
 	window.requestAnimationFrame(drawUI);
@@ -238,17 +238,33 @@ function drawBG() {
 	ctxBG.closePath();
 	ctxBG.strokeStyle = "lavender";
 	ctxBG.stroke();
-
+	
+	// Just for tests
+	for (var i = 0; i < 100/mapSectionSize; i++) {
+		for (var j = 0; j < 100/mapSectionSize; j++) {
+			var tile = baseMap[i][j];
+			if(tile == 0) {
+				ctxBG.beginPath();
+				ctxBG.arc(Math.round(i*mapSectionSize*gameSize/100+mapSectionSize*gameSize/200), Math.round(j*mapSectionSize*gameSize/100+mapSectionSize*gameSize/200), Math.round(mapSectionSize*gameSize/200), 0, Math.PI*2, false);
+				ctxBG.closePath();
+				ctxBG.strokeStyle = "GhostWhite";
+				ctxBG.fillStyle = "GhostWhite";
+				//ctxBG.fill();
+				ctxBG.stroke();
+			}
+		}
+	}
+	
 	// StartZone
 	startZone.draw(ctxBG);
 	endZone.draw(ctxBG);
 
 	for (var i = 0; i < towers.length; i++) {
-	var tower = towers[i];
-	tower.draw(ctxBG);
+		var tower = towers[i];
+		tower.draw(ctxBG);
+		}
 	}
-	}
-
+	
 	window.requestAnimationFrame(drawBG);
 }
 
