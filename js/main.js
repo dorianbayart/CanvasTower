@@ -317,6 +317,11 @@ function resizeGame() {
 	ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
+	
+	// Trying to bypass the antialias
+	ctxGame.translate(0.5,0.5);
+	ctxUI.translate(0.5,0.5);
+	ctxBG.translate(0.5,0.5);
 
 	// Centre les canvas
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
