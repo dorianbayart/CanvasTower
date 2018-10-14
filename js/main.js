@@ -21,7 +21,7 @@ var towers = [];
 var shots = [];
 var startZone;
 var endZone;
-var mapSectionSize = 5; // En pourcentage
+var mapSectionSize = 0.05; // En pourcentage
 var baseMap = [];
 
 var Creep = {
@@ -44,10 +44,10 @@ var Creep = {
 var StartZone = {
 	x: 0.15,
 	y: 0.15,
-	radius: 0.05,
+	radius: 0.04,
 	draw: function(ctx) {
 		ctx.beginPath();
-		ctx.arc(Math.round(this.x*gameSize), Math.round(this.y*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
+		ctx.arc(Math.round((this.x+mapSectionSize/2)*gameSize), Math.round((this.y+mapSectionSize/2)*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
 		ctx.closePath();
 		ctx.strokeStyle = "coral";
 		ctx.fillStyle = "bisque";
@@ -59,10 +59,10 @@ var StartZone = {
 var EndZone = {
 	x: 0.85,
 	y: 0.85,
-	radius: 0.05,
+	radius: 0.04,
 	draw: function(ctx) {
 		ctx.beginPath();
-		ctx.arc(Math.round(this.x*gameSize), Math.round(this.y*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
+		ctx.arc(Math.round((this.x+mapSectionSize/2)*gameSize), Math.round((this.y+mapSectionSize/2)*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
 		ctx.closePath();
 		ctx.strokeStyle = "limegreen";
 		ctx.fillStyle = "palegreen";
@@ -117,13 +117,14 @@ function init(){
 		window.addEventListener("resize", resizeGame);
 		//window.addEventListener("zoom", resizeGame);
 		window.addEventListener('orientationchange', resizeGame);
-		resizeGame();
+
+    resizeGame();
 
 		for (var i = 0; i < 20; i++) {
 			var creep = Object.create(Creep);
 			creep.radius *= gameSize;
-			creep.x = Math.floor(Math.random()*(gameSize-2*creep.radius))+creep.radius;
-			creep.y = Math.floor(Math.random()*(gameSize-2*creep.radius))+creep.radius;
+			creep.x = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
+			creep.y = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
 			creep.vx = 2*Math.random()-0.5;
 			creep.vy = 2*Math.random()-0.5;
 			creeps[i] = creep;
@@ -133,27 +134,99 @@ function init(){
 		endZone = Object.create(EndZone);
 
 		// Initialize the map
-		for (var i = 0; i < 100/mapSectionSize; i++) {
-			baseMap[i] = new Array(100/mapSectionSize);
-			for (var j = 0; j < 100/mapSectionSize; j++) {
+		for (var i = 0; i < 1/mapSectionSize; i++) {
+			baseMap[i] = new Array(1/mapSectionSize);
+			/*for (var j = 0; j < 1/mapSectionSize; j++) {
 				baseMap[i][j] = 0;
-			}
+			}*/
 		}
-		baseMap[startZone.x*100/mapSectionSize][startZone.y*100/mapSectionSize] = 'StartZone';
-		baseMap[endZone.x*100/mapSectionSize][endZone.y*100/mapSectionSize] = 'EndZone';
+    baseMap[8][7] = 'Wall';
+    baseMap[9][6] = 'Wall';
+		//baseMap[Math.round(startZone.x/mapSectionSize)][Math.round(startZone.y/mapSectionSize)] = 'Start';
+		//baseMap[Math.round(endZone.x/mapSectionSize)][Math.round(endZone.y/mapSectionSize)] = 'End';
 
 		for (var i = 0; i < 5; i++) {
 			var tower = Object.create(Tower);
 			tower.radius *= gameSize;
-			tower.x = Math.floor(Math.random()*(gameSize-2*tower.radius))+tower.radius;
-			tower.y = Math.floor(Math.random()*(gameSize-2*tower.radius))+tower.radius;
+			tower.x = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
+			tower.y = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
 			towers[i] = tower;
+      console.log(tower.x);
+      console.log(Math.floor(tower.x/gameSize/mapSectionSize));
+      baseMap[Math.floor(tower.x/gameSize/mapSectionSize)][Math.floor(tower.y/gameSize/mapSectionSize)] = 'Tower'
 		}
+
+    preparePathsMap();
 
 		window.requestAnimationFrame(drawGame);
 		window.requestAnimationFrame(drawUI);
 		window.requestAnimationFrame(drawBG);
 	}
+}
+
+function preparePathsMap() {
+  /*
+    frontier = Queue()
+    frontier.put(start)
+    distance = {}
+    distance[start] = 0
+
+    while not frontier.empty():
+       current = frontier.get()
+       for next in graph.neighbors(current):
+          if next not in distance:
+             frontier.put(next)
+             distance[next] = 1 + distance[current]
+  */
+
+  var Coord = {
+    x: 0,
+    y: 0
+  };
+
+  var frontier = [];
+  var f = 0;
+  var c = Object.create(Coord);
+  c.x = Math.round(endZone.x/mapSectionSize);
+  c.y = Math.round(endZone.y/mapSectionSize);
+  frontier[f] = c;
+  var distance = [];
+  var dx = 0, dy = 0;
+  baseMap[c.x][c.y] = 0;
+
+  while (f < frontier.length) {
+    c = frontier[f];
+
+    if( c.y > 0 && !baseMap[c.x][c.y-1] ) { // North
+      var c_N = Object.create(Coord);
+      c_N.x = c.x;
+      c_N.y = c.y - 1;
+      frontier[frontier.length] = c_N;
+      baseMap[c_N.x][c_N.y] = baseMap[c.x][c.y] + 1;
+    }
+    if ( c.y < 1/mapSectionSize-1 && !baseMap[c.x][c.y+1] ) { // South
+      var c_N = Object.create(Coord);
+      c_N.x = c.x;
+      c_N.y = c.y + 1;
+      frontier[frontier.length] = c_N;
+      baseMap[c_N.x][c_N.y] = baseMap[c.x][c.y] + 1;
+    }
+    if ( c.x < 1/mapSectionSize-1 && !baseMap[c.x+1][c.y] ) { // East
+      var c_N = Object.create(Coord);
+      c_N.x = c.x + 1;
+      c_N.y = c.y;
+      frontier[frontier.length] = c_N;
+      baseMap[c_N.x][c_N.y] = baseMap[c.x][c.y] + 1;
+    }
+    if ( c.x > 0 && !baseMap[c.x-1][c.y] ) { // West
+      var c_N = Object.create(Coord);
+      c_N.x = c.x - 1;
+      c_N.y = c.y;
+      frontier[frontier.length] = c_N;
+      baseMap[c_N.x][c_N.y] = baseMap[c.x][c.y] + 1;
+    }
+    f++;
+  }
 }
 
 
@@ -220,51 +293,66 @@ function drawUI() {
 function drawBG() {
 	dateBG1 = performance.now();
 	if(dateBG1 - dateBG0 > delayBG) {
-	fpsBG = (fpsBG*(fpsBGTab-1) + 1000. / (dateBG1 - dateBG0)) / fpsBGTab;
-	dateBG0 = dateBG1;
+  	fpsBG = (fpsBG*(fpsBGTab-1) + 1000. / (dateBG1 - dateBG0)) / fpsBGTab;
+  	dateBG0 = dateBG1;
 
-	ctxBG.clearRect(0, 0, canvasXSize, canvasYSize);
-	ctxBG.lineWidth = 1;
+  	ctxBG.clearRect(0, 0, canvasXSize, canvasYSize);
+  	ctxBG.lineWidth = 1;
 
-	// Bar UI
-	ctxBG.beginPath();
-	if(landscape) {
-		ctxBG.moveTo(gameSize+1, 0);
-		ctxBG.lineTo(gameSize+1, gameSize);
-	} else {
-		ctxBG.moveTo(0, gameSize+1);
-		ctxBG.lineTo(gameSize, gameSize+1);
-	}
-	ctxBG.closePath();
-	ctxBG.strokeStyle = "lavender";
-	ctxBG.stroke();
-	
-	// Just for tests
-	for (var i = 0; i < 100/mapSectionSize; i++) {
-		for (var j = 0; j < 100/mapSectionSize; j++) {
-			var tile = baseMap[i][j];
-			if(tile == 0) {
+  	// Bar UI
+  	ctxBG.beginPath();
+  	if(landscape) {
+  		ctxBG.moveTo(gameSize+1, 0);
+  		ctxBG.lineTo(gameSize+1, gameSize);
+  	} else {
+  		ctxBG.moveTo(0, gameSize+1);
+  		ctxBG.lineTo(gameSize, gameSize+1);
+  	}
+  	ctxBG.closePath();
+  	ctxBG.strokeStyle = "lavender";
+  	ctxBG.stroke();
+
+
+  	for (var i = 0; i < 1/mapSectionSize; i++) {
+  		for (var j = 0; j < 1/mapSectionSize; j++) {
+  			var tile = baseMap[i][j];
+        // Just for tests
 				ctxBG.beginPath();
-				ctxBG.arc(Math.round(i*mapSectionSize*gameSize/100+mapSectionSize*gameSize/200), Math.round(j*mapSectionSize*gameSize/100+mapSectionSize*gameSize/200), Math.round(mapSectionSize*gameSize/200), 0, Math.PI*2, false);
+				ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
 				ctxBG.closePath();
-				ctxBG.strokeStyle = "GhostWhite";
+				ctxBG.strokeStyle = "Gainsboro";
 				ctxBG.fillStyle = "GhostWhite";
 				//ctxBG.fill();
 				ctxBG.stroke();
-			}
-		}
-	}
-	
-	// StartZone
-	startZone.draw(ctxBG);
-	endZone.draw(ctxBG);
 
-	for (var i = 0; i < towers.length; i++) {
-		var tower = towers[i];
-		tower.draw(ctxBG);
-		}
+        if(tile == 'Wall') {
+  				ctxBG.beginPath();
+  				ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
+  				ctxBG.closePath();
+  				ctxBG.strokeStyle = "Black";
+  				ctxBG.fillStyle = "GhostWhite";
+  				//ctxBG.fill();
+  				ctxBG.stroke();
+
+  			}
+        ctxBG.font = 10*devicePixelRatio+"px Verdana";
+        ctxBG.textAlign = "center";
+        ctxBG.textBaseline = "middle";
+        ctxBG.fillStyle = "Gainsboro";
+        ctxBG.fillText(tile, i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2);
+  		}
+  	}
+
+  	// StartZone
+  	startZone.draw(ctxBG);
+  	endZone.draw(ctxBG);
+
+  	for (var i = 0; i < towers.length; i++) {
+  		var tower = towers[i];
+  		tower.draw(ctxBG);
+  	}
 	}
-	
+
 	window.requestAnimationFrame(drawBG);
 }
 
@@ -317,7 +405,7 @@ function resizeGame() {
 	ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
-	
+
 	// Trying to bypass the antialias
 	ctxGame.translate(0.5,0.5);
 	ctxUI.translate(0.5,0.5);
