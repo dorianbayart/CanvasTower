@@ -16,6 +16,10 @@ var delayBG = 200; // 5 FPS
 var dateGame0, dateGame1;
 var dateUI0, dateUI1;
 var dateBG0, dateBG1;
+var dateNewCreep0, dateNewCreep1;
+var dateUpdateGame0, dateUpdateGame1;
+var newCreepInterval = 1000;
+var updateGameInterval = 20;
 var creeps = [];
 var towers = [];
 var shots = [];
@@ -23,13 +27,14 @@ var startZone;
 var endZone;
 var mapSectionSize = 0.05; // En pourcentage
 var baseMap = [];
+var lives = 10;
 
 var Creep = {
 	x: 100,
 	y: 100,
 	vx: 1,
 	vy: 1,
-	speed: 2,
+	speed: 1,
 	radius: 0.01,
 	color: 'blue',
 	draw: function(ctx) {
@@ -113,14 +118,18 @@ function init(){
 		dateUI1 = dateGame0;
 		dateBG0 = dateGame0;
 		dateBG1 = dateGame0;
+		dateNewCreep0 = dateGame0;
+		dateNewCreep1 = dateGame0;
+		dateUpdateGame0 = dateGame0;
+		dateUpdateGame1 = dateGame0;
 
 		window.addEventListener("resize", resizeGame);
 		//window.addEventListener("zoom", resizeGame);
 		window.addEventListener('orientationchange', resizeGame);
 
-    resizeGame();
+		resizeGame();
 
-		for (var i = 0; i < 20; i++) {
+		/*for (var i = 0; i < 20; i++) {
 			var creep = Object.create(Creep);
 			creep.radius *= gameSize;
 			creep.x = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
@@ -128,7 +137,7 @@ function init(){
 			creep.vx = 2*Math.random()-0.5;
 			creep.vy = 2*Math.random()-0.5;
 			creeps[i] = creep;
-		}
+		}*/
 
 		startZone = Object.create(StartZone);
 		endZone = Object.create(EndZone);
@@ -140,8 +149,9 @@ function init(){
 				baseMap[i][j] = 0;
 			}*/
 		}
-    baseMap[8][7] = 'Wall';
-    baseMap[9][6] = 'Wall';
+		baseMap[3][12] = 'Wall';
+		baseMap[8][7] = 'Wall';
+		baseMap[9][6] = 'Wall';
 		//baseMap[Math.round(startZone.x/mapSectionSize)][Math.round(startZone.y/mapSectionSize)] = 'Start';
 		//baseMap[Math.round(endZone.x/mapSectionSize)][Math.round(endZone.y/mapSectionSize)] = 'End';
 
@@ -151,16 +161,16 @@ function init(){
 			tower.x = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
 			tower.y = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
 			towers[i] = tower;
-      console.log(tower.x);
-      console.log(Math.floor(tower.x/gameSize/mapSectionSize));
-      baseMap[Math.floor(tower.x/gameSize/mapSectionSize)][Math.floor(tower.y/gameSize/mapSectionSize)] = 'Tower'
+			baseMap[Math.floor(tower.x/gameSize/mapSectionSize)][Math.floor(tower.y/gameSize/mapSectionSize)] = 'Tower'
 		}
 
-    preparePathsMap();
+		preparePathsMap();
 
 		window.requestAnimationFrame(drawGame);
 		window.requestAnimationFrame(drawUI);
 		window.requestAnimationFrame(drawBG);
+		setInterval(updateGame, 20);
+		window.requestAnimationFrame(newCreep);
 	}
 }
 
@@ -227,8 +237,56 @@ function preparePathsMap() {
     }
     f++;
   }
+  
+  baseMap[Math.round(endZone.x/mapSectionSize)][Math.round(endZone.y/mapSectionSize)] = 0;
 }
 
+
+function updateGame() {
+	dateUpdateGame1 = performance.now();
+	var diffTime = dateUpdateGame1 - dateUpdateGame0;
+	if(diffTime >= updateGameInterval) {
+		dateUpdateGame0 = dateUpdateGame1;
+		for (var i = 0; i < creeps.length; i++) {
+			var x = Math.floor((creeps[i].x-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
+			var y = Math.floor((creeps[i].y-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
+			var score = baseMap[x][y];
+			//console.log(x + '/' + y + '/' + score);
+			if(y > 0 && score > baseMap[x][y-1]) {
+				creeps[i].y -= creeps[i].speed;
+			} else if (y < 1/mapSectionSize-1 && score > baseMap[x][y+1]) {
+				creeps[i].y += creeps[i].speed;
+			} else if (x > 0 && score > baseMap[x-1][y]) {
+				creeps[i].x -= creeps[i].speed/*creeps[i].radius/2*/;
+			} else if (x < 1/mapSectionSize-1 && score > baseMap[x+1][y]) {
+				creeps[i].x += creeps[i].speed/*creeps[i].radius/2*/;
+			}
+			if(x === endZone.x/mapSectionSize && y === endZone.y/mapSectionSize) {
+				creeps.remove(i);
+				lives --;
+			}
+		}
+	}
+	window.requestAnimationFrame(updateGame);
+}
+
+function newCreep() {
+	dateNewCreep1 = performance.now();
+	var diffTime = dateNewCreep1 - dateNewCreep0;
+	if(diffTime >= newCreepInterval) {
+		dateNewCreep0 = dateNewCreep1;
+		var creep = Object.create(Creep);
+		creep.radius *= gameSize;
+		//console.log(startZone.x*gameSize);
+		creep.x = Math.floor(startZone.x*gameSize+gameSize*mapSectionSize/2);
+		creep.y = Math.floor(startZone.y*gameSize+gameSize*mapSectionSize/2);
+		creep.speed = Math.random()*1.2+0.8;
+		/*creep.vx = 2*Math.random()-0.5;
+		creep.vy = 2*Math.random()-0.5;*/
+		creeps[creeps.length] = creep;
+	}
+	window.requestAnimationFrame(newCreep);
+}
 
 function drawGame() {
 	dateGame1 = performance.now();
@@ -285,6 +343,8 @@ function drawUI() {
 		ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
 		ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps', 2, 2+2*parseInt(ctxUI.font));
 		ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps', 2, 2+3*parseInt(ctxUI.font));
+		ctxUI.fillText('Creeps: '+creeps.length+'', 2, 2+4*parseInt(ctxUI.font));
+		ctxUI.fillText('Lives: '+lives+'', 2, 2+5*parseInt(ctxUI.font));
 	}
 
 	window.requestAnimationFrame(drawUI);
@@ -316,16 +376,16 @@ function drawBG() {
   	for (var i = 0; i < 1/mapSectionSize; i++) {
   		for (var j = 0; j < 1/mapSectionSize; j++) {
   			var tile = baseMap[i][j];
-        // Just for tests
-				ctxBG.beginPath();
-				ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
-				ctxBG.closePath();
-				ctxBG.strokeStyle = "Gainsboro";
-				ctxBG.fillStyle = "GhostWhite";
-				//ctxBG.fill();
-				ctxBG.stroke();
+			// Just for tests
+			/*ctxBG.beginPath();
+			ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
+			ctxBG.closePath();
+			ctxBG.strokeStyle = "Gainsboro";
+			ctxBG.fillStyle = "GhostWhite";
+			//ctxBG.fill();
+			ctxBG.stroke();*/
 
-        if(tile == 'Wall') {
+			if(tile == 'Wall') {
   				ctxBG.beginPath();
   				ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
   				ctxBG.closePath();
@@ -335,11 +395,11 @@ function drawBG() {
   				ctxBG.stroke();
 
   			}
-        ctxBG.font = 10*devicePixelRatio+"px Verdana";
+        /*ctxBG.font = 10*devicePixelRatio+"px Verdana";
         ctxBG.textAlign = "center";
         ctxBG.textBaseline = "middle";
         ctxBG.fillStyle = "Gainsboro";
-        ctxBG.fillText(tile, i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2);
+        ctxBG.fillText(tile, i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2);*/
   		}
   	}
 
@@ -416,3 +476,9 @@ function resizeGame() {
 	canvasUI.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 	canvasBG.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
 }
+
+Array.prototype.remove = function(from, to) {
+	var rest = this.slice((to || from) + 1 || this.length);
+	this.length = from < 0 ? this.length + from : from;
+	return this.push.apply(this, rest);
+};
