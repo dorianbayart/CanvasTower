@@ -6,13 +6,13 @@ var ratioSize = 1.4; // Défini un ratio pour les canvas
 var landscape = true;
 var ctx;
 var fpsGame = 0;
-var fpsGameTab = 20; // Used to average
+var fpsGameTab = 50; // Used to average
 var fpsUI = 0;
-var fpsUITab = 10; // Used to average
+var fpsUITab = 20; // Used to average
 var delayUI = 40; // 25 FPS
 var fpsBG = 0;
-var fpsBGTab = 4; // Used to average
-var delayBG = 200; // 5 FPS
+var fpsBGTab = 10; // Used to average
+var delayBG = 100; // 10 FPS
 var dateGame0, dateGame1;
 var dateUI0, dateUI1;
 var dateBG0, dateBG1;
@@ -36,13 +36,18 @@ var Creep = {
 	vy: 1,
 	speed: 1,
 	radius: 0.01,
-	color: 'blue',
+	life: 10,
+	color: 'cornflowerblue',
+	fillColor: 'lightskyblue',
 	draw: function(ctx) {
 		ctx.beginPath();
 		ctx.arc(Math.round(this.x), Math.round(this.y), Math.round(this.radius), 0, Math.PI*2, false);
 		ctx.closePath();
 		ctx.strokeStyle = this.color;
+		ctx.fillStyle = this.fillColor;
+		ctx.fill();
 		ctx.stroke();
+		
 	}
 };
 
@@ -50,12 +55,14 @@ var StartZone = {
 	x: 0.15,
 	y: 0.15,
 	radius: 0.04,
+	color: 'coral',
+	fillColor: 'bisque',
 	draw: function(ctx) {
 		ctx.beginPath();
 		ctx.arc(Math.round((this.x+mapSectionSize/2)*gameSize), Math.round((this.y+mapSectionSize/2)*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
 		ctx.closePath();
-		ctx.strokeStyle = "coral";
-		ctx.fillStyle = "bisque";
+		ctx.strokeStyle = this.color;
+		ctx.fillStyle = this.fillColor;
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -65,12 +72,14 @@ var EndZone = {
 	x: 0.85,
 	y: 0.85,
 	radius: 0.04,
+	color: 'limegreen',
+	fillColor: 'palegreen',
 	draw: function(ctx) {
 		ctx.beginPath();
 		ctx.arc(Math.round((this.x+mapSectionSize/2)*gameSize), Math.round((this.y+mapSectionSize/2)*gameSize), Math.round(this.radius*gameSize), 0, Math.PI*2, false);
 		ctx.closePath();
-		ctx.strokeStyle = "limegreen";
-		ctx.fillStyle = "palegreen";
+		ctx.strokeStyle = this.color;
+		ctx.fillStyle = this.fillColor;
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -80,16 +89,21 @@ var Tower = {
 	x: 0.1,
 	y: 0.1,
 	radius: 0.02,
+	angle: -Math.PI/4,
 	power: 10,
 	range: 0.1, // radius
 	cadence: 1, // per second
 	type: 'basic',
+	color: 'chocolate',
+	fillColor: 'wheat',
 	draw: function(ctx) {
 		ctx.beginPath();
 		ctx.arc(Math.round(this.x), Math.round(this.y), Math.round(this.radius), 0, Math.PI*2, false);
+		ctx.moveTo(Math.round(this.x), Math.round(this.y));
+  		ctx.lineTo(Math.round(this.x+Math.cos(this.angle)*this.radius), Math.round(this.y+Math.sin(this.angle)*this.radius));
 		ctx.closePath();
-		ctx.strokeStyle = "coral";
-		ctx.fillStyle = "bisque";
+		ctx.strokeStyle = this.color;
+		ctx.fillStyle = this.fillColor;
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -251,43 +265,60 @@ function updateGame() {
 	var modifY = false;
 	var	modifX = false;
 	var speed = 1;
+	var creep;
+	var tower;
 	if(diffTime >= updateGameInterval) {
 		dateUpdateGame0 = dateUpdateGame1;
 		for (var i = 0; i < creeps.length; i++) {
-			x = Math.floor((creeps[i].x-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
-			y = Math.floor((creeps[i].y-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
-			speed = creeps[i].speed * gameSize*mapSectionSize * updateGameInterval/1000;
+			creep = creeps[i];
+			x = Math.floor((creep.x-creep.radius)/gameSize/mapSectionSize);
+			y = Math.floor((creep.y-creep.radius)/gameSize/mapSectionSize);
+			speed = creep.speed * gameSize*mapSectionSize * updateGameInterval/1000;
 			score = baseMap[x][y];
 			modifX = false;
 			modifY = false;
 			
 			if((y > 0 && score > baseMap[x][y-1])) {
-				creeps[i].y -= speed;
+				creep.y -= speed;
 				modifY = true;
 			} else if ((y < 1/mapSectionSize-1 && score > baseMap[x][y+1])) {
-				creeps[i].y += speed;
+				creep.y += speed;
 				modifY = true;
 			} else if ((x > 0 && score > baseMap[x-1][y])) {
-				creeps[i].x -= speed;
+				creep.x -= speed;
 				modifX = true;
 			} else if ((x < 1/mapSectionSize-1 && score > baseMap[x+1][y])) {
-				creeps[i].x += speed;
+				creep.x += speed;
 				modifX = true;
 			}
 			
-			if(!modifY && creeps[i].y-creeps[i].radius/4 > y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y+1]) {
-				creeps[i].y -= speed;
-			} else if (!modifY && creeps[i].y+creeps[i].radius/4 < y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y-1]) {
-				creeps[i].y += speed;
-			} else if (!modifX && creeps[i].x-creeps[i].radius/4 > x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x+1][y]) {
-				creeps[i].x -= speed;
-			} else if (!modifX && creeps[i].x+creeps[i].radius/4 < x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x-1][y]) {
-				creeps[i].x += speed;
+			if(!modifY && creep.y-creep.radius/4 > y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y+1]) {
+				creep.y -= speed;
+			} else if (!modifY && creep.y+creep.radius/4 < y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y-1]) {
+				creep.y += speed;
+			} else if (!modifX && creep.x-creep.radius/4 > x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x+1][y]) {
+				creep.x -= speed;
+			} else if (!modifX && creep.x+creep.radius/4 < x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x-1][y]) {
+				creep.x += speed;
 			}
 			
 			if(x === endZone.x/mapSectionSize && y === endZone.y/mapSectionSize) {
 				creeps.remove(i);
 				lives --;
+			}
+		}
+		
+		if(creeps.length) {
+			var creep0 = creeps[0];
+			var x1, y1, x2, y2;
+			for (var i = 0; i < towers.length; i++) {
+				tower = towers[i];
+				x1 = (tower.x-tower.radius)/gameSize/mapSectionSize;
+				y1 = (tower.y-tower.radius)/gameSize/mapSectionSize;
+				x2 = (creep0.x-creep0.radius)/gameSize/mapSectionSize;
+				y2 = (creep0.y-creep0.radius)/gameSize/mapSectionSize;
+				tower.angle = Math.atan2(y2-y1, x2-x1);
+				//console.log(tower.angle);
 			}
 		}
 	}
@@ -319,7 +350,7 @@ function drawGame() {
 	dateGame0 = dateGame1;
 
 	ctxGame.clearRect(0, 0, canvasXSize, canvasYSize);
-	ctxGame.lineWidth = 1;
+	ctxGame.lineWidth = 0.5;
 
 	for (var i = 0; i < creeps.length; i++) {
 		var creep = creeps[i];
@@ -363,7 +394,7 @@ function drawUI() {
 		ctxUI.textAlign = "left";
 		ctxUI.textBaseline = "top";
 		ctxUI.fillStyle = "darkgreen";
-		ctxUI.fillText(canvasXSize+'x'+canvasYSize+'px (DPR:'+devicePixelRatio+')', 2, 2);
+		ctxUI.fillText(canvasXSize+'x'+canvasYSize+'px (DPR:'+viewport.devicePixelRatio+')', 2, 2);
 		ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
 		ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps', 2, 2+2*parseInt(ctxUI.font));
 		ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps', 2, 2+3*parseInt(ctxUI.font));
@@ -401,28 +432,28 @@ function drawBG() {
   		for (var j = 0; j < 1/mapSectionSize; j++) {
   			var tile = baseMap[i][j];
 			// Just for tests
-			ctxBG.beginPath();
+			/*ctxBG.beginPath();
 			ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
 			ctxBG.closePath();
-			ctxBG.strokeStyle = "Gainsboro";
-			ctxBG.fillStyle = "GhostWhite";
+			ctxBG.strokeStyle = "gainsboro";
+			ctxBG.fillStyle = "ghostWhite";
 			//ctxBG.fill();
-			ctxBG.stroke();
+			ctxBG.stroke();*/
 
 			if(tile == 'Wall') {
   				ctxBG.beginPath();
   				ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
   				ctxBG.closePath();
-  				ctxBG.strokeStyle = "Black";
-  				ctxBG.fillStyle = "GhostWhite";
-  				//ctxBG.fill();
+  				ctxBG.strokeStyle = "darkgray";
+  				ctxBG.fillStyle = "gainsboro";
+  				ctxBG.fill();
   				ctxBG.stroke();
 
   			}
         /*ctxBG.font = 10*devicePixelRatio+"px Verdana";
         ctxBG.textAlign = "center";
         ctxBG.textBaseline = "middle";
-        ctxBG.fillStyle = "Gainsboro";
+        ctxBG.fillStyle = "gainsboro";
         ctxBG.fillText(tile, i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2);*/
   		}
   	}
@@ -491,9 +522,9 @@ function resizeGame() {
 	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);*/
 
 	// Trying to bypass the antialias
-	/*ctxGame.translate(0.5,0.5);
+	ctxGame.translate(0.5,0.5);
 	ctxUI.translate(0.5,0.5);
-	ctxBG.translate(0.5,0.5);*/
+	ctxBG.translate(0.5,0.5);
 
 	// Centre les canvas
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
