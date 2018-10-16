@@ -18,8 +18,8 @@ var dateUI0, dateUI1;
 var dateBG0, dateBG1;
 var dateNewCreep0, dateNewCreep1;
 var dateUpdateGame0, dateUpdateGame1;
-var newCreepInterval = 1000;
-var updateGameInterval = 20;
+var newCreepInterval = 5000;
+var updateGameInterval = 25;
 var creeps = [];
 var towers = [];
 var shots = [];
@@ -169,7 +169,7 @@ function init(){
 		window.requestAnimationFrame(drawGame);
 		window.requestAnimationFrame(drawUI);
 		window.requestAnimationFrame(drawBG);
-		setInterval(updateGame, 20);
+		window.requestAnimationFrame(updateGame);
 		window.requestAnimationFrame(newCreep);
 	}
 }
@@ -245,22 +245,46 @@ function preparePathsMap() {
 function updateGame() {
 	dateUpdateGame1 = performance.now();
 	var diffTime = dateUpdateGame1 - dateUpdateGame0;
+	var x = 0;
+	var y = 0;
+	var score = 0;
+	var modifY = false;
+	var	modifX = false;
+	var speed = 1;
 	if(diffTime >= updateGameInterval) {
 		dateUpdateGame0 = dateUpdateGame1;
 		for (var i = 0; i < creeps.length; i++) {
-			var x = Math.floor((creeps[i].x-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
-			var y = Math.floor((creeps[i].y-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
-			var score = baseMap[x][y];
-			//console.log(x + '/' + y + '/' + score);
-			if(y > 0 && score > baseMap[x][y-1]) {
-				creeps[i].y -= creeps[i].speed;
-			} else if (y < 1/mapSectionSize-1 && score > baseMap[x][y+1]) {
-				creeps[i].y += creeps[i].speed;
-			} else if (x > 0 && score > baseMap[x-1][y]) {
-				creeps[i].x -= creeps[i].speed/*creeps[i].radius/2*/;
-			} else if (x < 1/mapSectionSize-1 && score > baseMap[x+1][y]) {
-				creeps[i].x += creeps[i].speed/*creeps[i].radius/2*/;
+			x = Math.floor((creeps[i].x-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
+			y = Math.floor((creeps[i].y-creeps[i].radius)/gameSize/mapSectionSize /*+ gameSize*mapSectionSize/2*/);
+			speed = creeps[i].speed * gameSize*mapSectionSize * updateGameInterval/1000;
+			score = baseMap[x][y];
+			modifX = false;
+			modifY = false;
+			
+			if((y > 0 && score > baseMap[x][y-1])) {
+				creeps[i].y -= speed;
+				modifY = true;
+			} else if ((y < 1/mapSectionSize-1 && score > baseMap[x][y+1])) {
+				creeps[i].y += speed;
+				modifY = true;
+			} else if ((x > 0 && score > baseMap[x-1][y])) {
+				creeps[i].x -= speed;
+				modifX = true;
+			} else if ((x < 1/mapSectionSize-1 && score > baseMap[x+1][y])) {
+				creeps[i].x += speed;
+				modifX = true;
 			}
+			
+			if(!modifY && creeps[i].y-creeps[i].radius/4 > y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y+1]) {
+				creeps[i].y -= speed;
+			} else if (!modifY && creeps[i].y+creeps[i].radius/4 < y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y-1]) {
+				creeps[i].y += speed;
+			} else if (!modifX && creeps[i].x-creeps[i].radius/4 > x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x+1][y]) {
+				creeps[i].x -= speed;
+			} else if (!modifX && creeps[i].x+creeps[i].radius/4 < x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x-1][y]) {
+				creeps[i].x += speed;
+			}
+			
 			if(x === endZone.x/mapSectionSize && y === endZone.y/mapSectionSize) {
 				creeps.remove(i);
 				lives --;
@@ -280,7 +304,7 @@ function newCreep() {
 		//console.log(startZone.x*gameSize);
 		creep.x = Math.floor(startZone.x*gameSize+gameSize*mapSectionSize/2);
 		creep.y = Math.floor(startZone.y*gameSize+gameSize*mapSectionSize/2);
-		creep.speed = Math.random()*1.2+0.8;
+		creep.speed = /*Math.random()*1.2+0.4*/ 1;
 		/*creep.vx = 2*Math.random()-0.5;
 		creep.vy = 2*Math.random()-0.5;*/
 		creeps[creeps.length] = creep;
@@ -377,13 +401,13 @@ function drawBG() {
   		for (var j = 0; j < 1/mapSectionSize; j++) {
   			var tile = baseMap[i][j];
 			// Just for tests
-			/*ctxBG.beginPath();
+			ctxBG.beginPath();
 			ctxBG.arc(i*mapSectionSize*gameSize+mapSectionSize*gameSize/2, j*mapSectionSize*gameSize+mapSectionSize*gameSize/2, mapSectionSize*gameSize/2, 0, Math.PI*2, false);
 			ctxBG.closePath();
 			ctxBG.strokeStyle = "Gainsboro";
 			ctxBG.fillStyle = "GhostWhite";
 			//ctxBG.fill();
-			ctxBG.stroke();*/
+			ctxBG.stroke();
 
 			if(tile == 'Wall') {
   				ctxBG.beginPath();
@@ -457,19 +481,19 @@ function resizeGame() {
 	canvasBG.width = canvasXSize;
 	canvasBG.height = canvasYSize;
 
-	devicePixelRatio = viewport.devicePixelRatio;
+	devicePixelRatio = 1/*viewport.devicePixelRatio;
 	canvasXSize *= devicePixelRatio;
 	canvasYSize *= devicePixelRatio;
 	gameSize *= devicePixelRatio;
 
 	ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
-	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
+	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);*/
 
 	// Trying to bypass the antialias
-	ctxGame.translate(0.5,0.5);
+	/*ctxGame.translate(0.5,0.5);
 	ctxUI.translate(0.5,0.5);
-	ctxBG.translate(0.5,0.5);
+	ctxBG.translate(0.5,0.5);*/
 
 	// Centre les canvas
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
@@ -478,7 +502,7 @@ function resizeGame() {
 }
 
 Array.prototype.remove = function(from, to) {
-	var rest = this.slice((to || from) + 1 || this.length);
-	this.length = from < 0 ? this.length + from : from;
-	return this.push.apply(this, rest);
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
 };
