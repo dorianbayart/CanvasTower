@@ -47,7 +47,7 @@ var Creep = {
 		ctx.fillStyle = this.fillColor;
 		ctx.fill();
 		ctx.stroke();
-		
+
 	}
 };
 
@@ -93,6 +93,7 @@ var Tower = {
 	power: 10,
 	range: 0.1, // radius
 	cadence: 1, // per second
+  focusOn: 0, // creep focused
 	type: 'basic',
 	color: 'chocolate',
 	fillColor: 'wheat',
@@ -251,7 +252,7 @@ function preparePathsMap() {
     }
     f++;
   }
-  
+
   baseMap[Math.round(endZone.x/mapSectionSize)][Math.round(endZone.y/mapSectionSize)] = 0;
 }
 
@@ -277,7 +278,7 @@ function updateGame() {
 			score = baseMap[x][y];
 			modifX = false;
 			modifY = false;
-			
+
 			if((y > 0 && score > baseMap[x][y-1])) {
 				creep.y -= speed;
 				modifY = true;
@@ -291,7 +292,7 @@ function updateGame() {
 				creep.x += speed;
 				modifX = true;
 			}
-			
+
 			if(!modifY && creep.y-creep.radius/4 > y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y+1]) {
 				creep.y -= speed;
 			} else if (!modifY && creep.y+creep.radius/4 < y*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x][y-1]) {
@@ -301,23 +302,41 @@ function updateGame() {
 			} else if (!modifX && creep.x+creep.radius/4 < x*gameSize*mapSectionSize+gameSize*mapSectionSize/2 && score < baseMap[x-1][y]) {
 				creep.x += speed;
 			}
-			
+
 			if(x === endZone.x/mapSectionSize && y === endZone.y/mapSectionSize) {
 				creeps.remove(i);
 				lives --;
 			}
 		}
-		
+
 		if(creeps.length) {
-			var creep0 = creeps[0];
+
+      var creep;
 			var x1, y1, x2, y2;
+      var distance = gameSize*gameSize;
 			for (var i = 0; i < towers.length; i++) {
 				tower = towers[i];
-				x1 = (tower.x-tower.radius)/gameSize/mapSectionSize;
+        x1 = (tower.x-tower.radius)/gameSize/mapSectionSize;
 				y1 = (tower.y-tower.radius)/gameSize/mapSectionSize;
-				x2 = (creep0.x-creep0.radius)/gameSize/mapSectionSize;
-				y2 = (creep0.y-creep0.radius)/gameSize/mapSectionSize;
-				tower.angle = Math.atan2(y2-y1, x2-x1);
+        x1 = tower.x;
+				y1 = tower.y;
+
+        for (var j=0; j < creeps.length; j++) {
+          creep = creeps[j];
+          x2 = (creep.x-creep.radius)/gameSize/mapSectionSize;
+  				y2 = (creep.y-creep.radius)/gameSize/mapSectionSize;
+          x2 = creep.x;
+  				y2 = creep.y;
+          //console.log((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+          if((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) < distance) {
+            distance = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1);
+            tower.angle = Math.atan2(y2-y1, x2-x1);
+            tower.focusOn = j;
+          }
+        }
+
+
+				//tower.angle = Math.atan2(y2-y1, x2-x1);
 				//console.log(tower.angle);
 			}
 		}
@@ -394,7 +413,7 @@ function drawUI() {
 		ctxUI.textAlign = "left";
 		ctxUI.textBaseline = "top";
 		ctxUI.fillStyle = "darkgreen";
-		ctxUI.fillText(canvasXSize+'x'+canvasYSize+'px (DPR:'+viewport.devicePixelRatio+')', 2, 2);
+		ctxUI.fillText(canvasXSize+'x'+canvasYSize+'px (DPR:'+devicePixelRatio+')', 2, 2);
 		ctxUI.fillText('Game: '+Math.round(fpsGame)+'fps', 2, 2+parseInt(ctxUI.font));
 		ctxUI.fillText('UI: '+Math.round(fpsUI)+'fps', 2, 2+2*parseInt(ctxUI.font));
 		ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps', 2, 2+3*parseInt(ctxUI.font));
@@ -512,19 +531,19 @@ function resizeGame() {
 	canvasBG.width = canvasXSize;
 	canvasBG.height = canvasYSize;
 
-	devicePixelRatio = 1/*viewport.devicePixelRatio;
+	devicePixelRatio = viewport.devicePixelRatio + 1;
 	canvasXSize *= devicePixelRatio;
 	canvasYSize *= devicePixelRatio;
 	gameSize *= devicePixelRatio;
 
 	ctxGame.scale(1/devicePixelRatio, 1/devicePixelRatio);
 	ctxUI.scale(1/devicePixelRatio, 1/devicePixelRatio);
-	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);*/
+	ctxBG.scale(1/devicePixelRatio, 1/devicePixelRatio);
 
 	// Trying to bypass the antialias
-	ctxGame.translate(0.5,0.5);
+	/*ctxGame.translate(0.5,0.5);
 	ctxUI.translate(0.5,0.5);
-	ctxBG.translate(0.5,0.5);
+	ctxBG.translate(0.5,0.5);*/
 
 	// Centre les canvas
 	canvasGame.style.margin = Math.floor((devicePixelRatio*viewport.height-canvasYSize)/(2*devicePixelRatio)) + "px " + Math.floor((devicePixelRatio*viewport.width-canvasXSize)/(2*devicePixelRatio)) + "px";
