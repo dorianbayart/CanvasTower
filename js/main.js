@@ -25,7 +25,7 @@ var towers = [];
 var shots = [];
 var startZone;
 var endZone;
-var mapSectionSize = 0.05; // En pourcentage
+var mapSectionSize = 0.1; // En pourcentage
 var baseMap = [];
 var lives = 10;
 
@@ -35,7 +35,7 @@ var Creep = {
 	vx: 1,
 	vy: 1,
 	speed: 1,
-	radius: 0.01,
+	radius: 0.025,
 	life: 10,
 	color: 'cornflowerblue',
 	fillColor: 'lightskyblue',
@@ -52,8 +52,8 @@ var Creep = {
 };
 
 var StartZone = {
-	x: 0.15,
-	y: 0.15,
+	x: 0.1,
+	y: 0.1,
 	radius: 0.04,
 	color: 'coral',
 	fillColor: 'bisque',
@@ -69,8 +69,8 @@ var StartZone = {
 };
 
 var EndZone = {
-	x: 0.85,
-	y: 0.85,
+	x: 0.8,
+	y: 0.8,
 	radius: 0.04,
 	color: 'limegreen',
 	fillColor: 'palegreen',
@@ -88,7 +88,7 @@ var EndZone = {
 var Tower = {
 	x: 0.1,
 	y: 0.1,
-	radius: 0.02,
+	radius: 0.04,
 	angle: -Math.PI/4,
 	power: 10,
 	range: 0.1, // radius
@@ -154,7 +154,7 @@ function init(){
 				baseMap[i][j] = 0;
 			}*/
 		}
-		baseMap[3][12] = 'Wall';
+		baseMap[1][4] = 'Wall';
 		baseMap[8][7] = 'Wall';
 		baseMap[9][6] = 'Wall';
 
