@@ -144,16 +144,6 @@ function init(){
 
 		resizeGame();
 
-		/*for (var i = 0; i < 20; i++) {
-			var creep = Object.create(Creep);
-			creep.radius *= gameSize;
-			creep.x = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
-			creep.y = Math.floor(Math.random()*(1/mapSectionSize))*gameSize*mapSectionSize + gameSize*mapSectionSize/2;
-			creep.vx = 2*Math.random()-0.5;
-			creep.vy = 2*Math.random()-0.5;
-			creeps[i] = creep;
-		}*/
-
 		startZone = Object.create(StartZone);
 		endZone = Object.create(EndZone);
 
@@ -167,8 +157,7 @@ function init(){
 		baseMap[3][12] = 'Wall';
 		baseMap[8][7] = 'Wall';
 		baseMap[9][6] = 'Wall';
-		//baseMap[Math.round(startZone.x/mapSectionSize)][Math.round(startZone.y/mapSectionSize)] = 'Start';
-		//baseMap[Math.round(endZone.x/mapSectionSize)][Math.round(endZone.y/mapSectionSize)] = 'End';
+
 
 		for (var i = 0; i < 5; i++) {
 			var tower = Object.create(Tower);
@@ -311,33 +300,26 @@ function updateGame() {
 
 		if(creeps.length) {
 
-      var creep;
+			var creep;
 			var x1, y1, x2, y2;
-      var distance = gameSize*gameSize;
+			var distance;
 			for (var i = 0; i < towers.length; i++) {
+				distance = gameSize*gameSize;
 				tower = towers[i];
-        x1 = (tower.x-tower.radius)/gameSize/mapSectionSize;
-				y1 = (tower.y-tower.radius)/gameSize/mapSectionSize;
-        x1 = tower.x;
+				x1 = tower.x;
 				y1 = tower.y;
 
-        for (var j=0; j < creeps.length; j++) {
-          creep = creeps[j];
-          x2 = (creep.x-creep.radius)/gameSize/mapSectionSize;
-  				y2 = (creep.y-creep.radius)/gameSize/mapSectionSize;
-          x2 = creep.x;
-  				y2 = creep.y;
-          //console.log((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-          if((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) < distance) {
-            distance = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1);
-            tower.angle = Math.atan2(y2-y1, x2-x1);
-            tower.focusOn = j;
-          }
-        }
+				for (var j=0; j < creeps.length; j++) {
+					creep = creeps[j];
+					x2 = creep.x;
+					y2 = creep.y;
+					if((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) < distance) {
+						distance = Math.round((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+						tower.angle = Math.atan2(y2-y1, x2-x1);
+						tower.focusOn = j;
+					}
+				}
 
-
-				//tower.angle = Math.atan2(y2-y1, x2-x1);
-				//console.log(tower.angle);
 			}
 		}
 	}
@@ -351,39 +333,28 @@ function newCreep() {
 		dateNewCreep0 = dateNewCreep1;
 		var creep = Object.create(Creep);
 		creep.radius *= gameSize;
-		//console.log(startZone.x*gameSize);
+		
 		creep.x = Math.floor(startZone.x*gameSize+gameSize*mapSectionSize/2);
 		creep.y = Math.floor(startZone.y*gameSize+gameSize*mapSectionSize/2);
 		creep.speed = /*Math.random()*1.2+0.4*/ 1;
-		/*creep.vx = 2*Math.random()-0.5;
-		creep.vy = 2*Math.random()-0.5;*/
+
 		creeps[creeps.length] = creep;
 	}
 	window.requestAnimationFrame(newCreep);
 }
 
 function drawGame() {
+	var creep;
 	dateGame1 = performance.now();
 	var diffTime = dateGame1 - dateGame0;
 	fpsGame = (fpsGame*(fpsGameTab-1) + 1000. / diffTime) / fpsGameTab;
 	dateGame0 = dateGame1;
 
 	ctxGame.clearRect(0, 0, canvasXSize, canvasYSize);
-	ctxGame.lineWidth = 0.5;
-
+	ctxGame.lineWidth = 1;
+	
 	for (var i = 0; i < creeps.length; i++) {
-		var creep = creeps[i];
-		/*
-		creep.x += creep.vx * creep.speed;
-		creep.y += creep.vy * creep.speed;
-		if(creep.x > gameSize - creep.radius || creep.x < creep.radius) {
-		  creep.vx = -creep.vx;
-		}
-		if(creep.y > gameSize - creep.radius || creep.y < creep.radius) {
-		  creep.vy = -creep.vy;
-		}
-		*/
-
+		creep = creeps[i];
 		creep.draw(ctxGame);
 	}
 
@@ -531,7 +502,7 @@ function resizeGame() {
 	canvasBG.width = canvasXSize;
 	canvasBG.height = canvasYSize;
 
-	devicePixelRatio = viewport.devicePixelRatio + 1;
+	devicePixelRatio = /*viewport.devicePixelRatio + 1*/4;
 	canvasXSize *= devicePixelRatio;
 	canvasYSize *= devicePixelRatio;
 	gameSize *= devicePixelRatio;
