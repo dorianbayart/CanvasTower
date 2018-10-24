@@ -162,7 +162,15 @@ function init(){
     canvasUI.addEventListener('mousemove', function(evt) {
       mousePosition = getMousePos(canvasUI, evt);
     }, false);
+    canvasUI.addEventListener('touchstart', function(evt) {
+      evt.preventDefault();
+      mousePosition = getMousePos(canvasUI, evt);
+    }, false);
     canvasUI.addEventListener('touchmove', function(evt) {
+      evt.preventDefault();
+      mousePosition = getMousePos(canvasUI, evt);
+    }, false);
+    canvasUI.addEventListener('touchend', function(evt) {
       evt.preventDefault();
       mousePosition = getMousePos(canvasUI, evt);
     }, false);
