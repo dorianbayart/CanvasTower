@@ -164,15 +164,15 @@ function init(){
     }, false);
     canvasUI.addEventListener('touchstart', function(evt) {
       evt.preventDefault();
-      mousePosition = getMousePos(canvasUI, evt);
+      mousePosition = getMousePos(canvasUI, evt.touches[0]);
     }, false);
     canvasUI.addEventListener('touchmove', function(evt) {
       evt.preventDefault();
-      mousePosition = getMousePos(canvasUI, evt);
+      mousePosition = getMousePos(canvasUI, evt.touches[0]);
     }, false);
     canvasUI.addEventListener('touchend', function(evt) {
       evt.preventDefault();
-      mousePosition = getMousePos(canvasUI, evt);
+      mousePosition = getMousePos(canvasUI, evt.touches[0]);
     }, false);
 
 
@@ -435,7 +435,7 @@ function drawUI() {
     ctxUI.fillText('BG: '+Math.round(fpsBG)+'fps', 2, 2+3*parseInt(ctxUI.font));
     ctxUI.fillText('Creeps: '+creeps.length+'', 2, 2+4*parseInt(ctxUI.font));
     ctxUI.fillText('Lives: '+lives+'', 2, 2+5*parseInt(ctxUI.font));
-
+    ctxUI.fillText('Mouse: '+mousePosition.x+':'+mousePosition.y, 2, 2+6*parseInt(ctxUI.font));
 
     for (var i = 0; i < towers.length; i++) {
       var mouseDistance = Math.round(devicePixelRatio*Math.sqrt((towers[i].x/devicePixelRatio - mousePosition.x)*(towers[i].x/devicePixelRatio - mousePosition.x) + (towers[i].y/devicePixelRatio - mousePosition.y)*(towers[i].y/devicePixelRatio - mousePosition.y)));
