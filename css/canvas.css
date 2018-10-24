@@ -7,6 +7,7 @@ body {
   border: 0;
   overflow: hidden; /*  Disable scrollbars */
   display: block;  /* No floating content on sides */
+  touch-action: none;
 }
 
 #stage {
@@ -24,6 +25,7 @@ body {
 canvas {
   position: absolute;
   outline: 1px solid lavender;
+  touch-action: none;
 }
 #ui-layer { z-index: 3 }
 #game-layer { z-index: 2 }
